@@ -1,0 +1,31 @@
+# Lokale Konfiguration (niemals ins Repo!)
+config.json
+*.config.local.json
+
+# Vorlage bleibt im Repo
+!example.config.json
+
+# Bicep
+*.bicep.bak
+
+# PowerShell
+*.ps1.bak
+
+# Azure CLI
+.azure/
+
+# VS Code
+.vscode/*
+!.vscode/extensions.json
+!.vscode/tasks.json
+.devcontainer/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Temporäre Dateien
+*.tmp
+*.log
