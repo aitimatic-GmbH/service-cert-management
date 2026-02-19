@@ -1,17 +1,29 @@
 {
   "_comment": "Kopiere diese Datei zu config.json und trage deine Werte ein. config.json wird NICHT ins Repository eingecheckt.",
-  "azure": {
-    "tenantId": "<YOUR_TENANT_ID>",
-    "subscriptionId": "<YOUR_SUBSCRIPTION_ID>",
-    "clientId": "<YOUR_CLIENT_ID>"
-  },
   "resource": {
     "location": "<YOUR_LOCATION>",
     "workload": "certmgmt",
     "environment": "<dev|staging|prod>"
   },
   "keyVault": {
-    "name": "kv-certmgmt-<env>-<region>"
+    "sku": "standard",
+    "softDeleteRetentionInDays": 90,
+    "_softDeleteNote": "Soft Delete wird automatisch nur in prod aktiviert (dev/staging: deaktiviert für schnelle Tests)"
+  },
+  "logAnalytics": {
+    "sku": "PerGB2018",
+    "retentionInDays": 30
+  },
+  "functionApp": {
+    "runtime": "powershell",
+    "runtimeVersion": "7.4",
+    "functionsExtensionVersion": "~4",
+    "storageAccountSku": "Standard_LRS"
+  },
+  "eventGrid": {
+    "maxDeliveryAttempts": 30,
+    "eventTimeToLiveInMinutes": 1440,
+    "_note": "dev: weniger Retries/kürzere TTL für schnelles Feedback, prod: mehr Resilience"
   },
   "certificate": {
     "name": "<YOUR_CERT_NAME>",
