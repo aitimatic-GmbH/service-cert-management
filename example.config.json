@@ -1,0 +1,21 @@
+{
+  "_comment": "Kopiere diese Datei zu config.json und trage deine Werte ein. config.json wird NICHT ins Repository eingecheckt.",
+  "azure": {
+    "tenantId": "<YOUR_TENANT_ID>",
+    "subscriptionId": "<YOUR_SUBSCRIPTION_ID>",
+    "clientId": "<YOUR_CLIENT_ID>"
+  },
+  "resource": {
+    "location": "<YOUR_LOCATION>",
+    "workload": "certmgmt",
+    "environment": "<dev|staging|prod>"
+  },
+  "keyVault": {
+    "name": "kv-certmgmt-<env>-<region>"
+  },
+  "certificate": {
+    "name": "<YOUR_CERT_NAME>",
+    "validityDays": "<1|7|365>",
+    "nearExpiryDays": "<1|6|30>"
+  }
+}
