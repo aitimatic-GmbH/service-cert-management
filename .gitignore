@@ -1,7 +1,6 @@
 # Lokale Konfiguration (niemals ins Repo!)
 config.json
-*.config.local.json
-
+*.local*
 # Vorlage bleibt im Repo
 !example.config.json
 
