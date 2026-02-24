@@ -6,6 +6,7 @@ config.json
 
 # Bicep
 *.bicep.bak
+infra/**/*.json
 
 # PowerShell
 *.ps1.bak
