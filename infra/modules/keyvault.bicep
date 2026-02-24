@@ -37,10 +37,11 @@ param keyVaultSku string = 'standard'
 param softDeleteRetentionInDays int = 90
 
 // Variables für Naming (Microsoft CAF)
-var keyVaultName = 'kv-${workload}-${environment}-${uniqueString(resourceGroup().id, location)}'
+// Key Vault: max 24 Zeichen. 'kv-' (3) + workload (max 8) + '-' (1) + envAbbr (max 4) + '-' (1) + suffix (5) = max 22
+var envAbbr = environment == 'staging' ? 'stg' : environment
+var keyVaultName = 'kv-${workload}-${envAbbr}-${take(uniqueString(resourceGroup().id, location), 5)}'
 
-// Soft Delete nur in prod aktiviert
-var enableSoftDelete = environment == 'prod'
+// Purge Protection nur in prod aktiviert (einmal aktiviert nicht mehr deaktivierbar → nur true oder weglassen)
 var enablePurgeProtection = environment == 'prod'
 
 // Key Vault
@@ -55,9 +56,10 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
     }
     tenantId: subscription().tenantId
     enableRbacAuthorization: true
-    enableSoftDelete: enableSoftDelete
-    softDeleteRetentionInDays: enableSoftDelete ? softDeleteRetentionInDays : null
-    enablePurgeProtection: enablePurgeProtection
+    // Soft Delete ist ab API 2021+ immer aktiviert, Retention kurz in dev/staging für schnelle Iteration
+    softDeleteRetentionInDays: environment == 'prod' ? softDeleteRetentionInDays : 7
+    // Purge Protection nur in prod: Eigenschaft weglassen wenn false (Azure erlaubt kein explizites false)
+    enablePurgeProtection: enablePurgeProtection ? true : null
     publicNetworkAccess: 'Enabled'
     networkAcls: {
       defaultAction: 'Allow'
@@ -95,18 +97,18 @@ resource diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-pr
   }
 }
 
-// Outputs
-@description('Key Vault Resource ID')
+// Ausgaben
+@description('Key Vault Ressourcen-ID')
 output keyVaultId string = keyVault.id
 
-@description('Key Vault URI')
+@description('Key Vault-URI')
 output keyVaultUri string = keyVault.properties.vaultUri
 
-@description('Key Vault Name')
+@description('Key Vault-Name')
 output keyVaultName string = keyVault.name
 
-@description('Certificate Validity Days (für Parameter-Weitergabe)')
+@description('Zertifikat-Gültigkeitsdauer in Tagen (für Parameter-Weitergabe)')
 output certificateValidityDays int = certificateValidityDays
 
-@description('Certificate Near-Expiry Days (für Parameter-Weitergabe)')
+@description('Tage vor Ablauf für Near-Expiry Event (für Parameter-Weitergabe)')
 output certificateNearExpiryDays int = certificateNearExpiryDays
