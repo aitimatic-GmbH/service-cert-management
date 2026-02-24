@@ -27,7 +27,9 @@
   },
   "certificate": {
     "name": "<YOUR_CERT_NAME>",
-    "validityDays": "<1|7|365>",
-    "nearExpiryDays": "<1|6|30>"
+    "_validityNote": "dev=1, staging=3, prod=365 (Tage Zertifikat-Gültigkeit)",
+    "_nearExpiryNote": "dev=2, staging=4, prod=30 (Tage vor Ablauf für CertificateNearExpiry Event)",
+    "validityDays": "<1|3|365>",
+    "nearExpiryDays": "<2|4|30>"
   }
 }
