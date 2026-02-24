@@ -49,9 +49,14 @@ param functionsExtensionVersion string = '~4'
 ])
 param storageAccountSku string = 'Standard_LRS'
 
+@description('Gültigkeitsdauer neuer Zertifikate in Tagen (CERT_VALIDITY_DAYS App Setting)')
+@minValue(1)
+param certificateValidityDays int = 365
+
 // Variables für Naming (Microsoft CAF)
 // Storage Account: max 24 Zeichen, nur lowercase + digits
-var storageAccountName = 'st${workload}${environment}${uniqueString(resourceGroup().id)}'
+// 'st' (2) + workload[:6] (6) + environment[:3] (3) + suffix[:13] (13) = 24
+var storageAccountName = 'st${take(workload, 6)}${take(environment, 3)}${take(uniqueString(resourceGroup().id), 13)}'
 var appServicePlanName = 'plan-${workload}-${environment}-${uniqueString(location)}'
 var functionAppName = 'func-${workload}-${environment}-${uniqueString(location)}'
 
@@ -135,23 +140,27 @@ resource functionApp 'Microsoft.Web/sites@2023-01-01' = {
           name: 'PSWorkerInProcConcurrencyUpperBound'
           value: '1'
         }
+        {
+          name: 'CERT_VALIDITY_DAYS'
+          value: string(certificateValidityDays)
+        }
       ]
     }
   }
 }
 
-// Outputs
-@description('Function App Resource ID')
+// Ausgaben
+@description('Function App Ressourcen-ID')
 output functionAppId string = functionApp.id
 
-@description('Function App Name')
+@description('Function App-Name')
 output functionAppName string = functionApp.name
 
-@description('Function App Principal ID (Managed Identity)')
+@description('Managed Identity Principal-ID der Function App')
 output principalId string = functionApp.identity.principalId
 
-@description('Function App Default Hostname')
+@description('Function App Standard-Hostname')
 output functionAppHostName string = functionApp.properties.defaultHostName
 
-@description('Storage Account Name')
+@description('Storage Account-Name')
 output storageAccountName string = storageAccount.name
