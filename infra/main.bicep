@@ -50,6 +50,19 @@ param certificateValidityDays int
 @description('Tage vor Ablauf für Near-Expiry Event')
 param certificateNearExpiryDays int
 
+@description('EventGrid Subscription deployen (false = Phase 1 ohne EventGrid, true = Phase 2 vollständig)')
+param deployEventGrid bool = true
+
+@description('OID des deployenden Users/SP für Key Vault Lese-Zugriff (Function-Test). Leer = kein Zugriff.')
+param deployingUserObjectId string = ''
+
+@description('Principal Type des deployenden Users/SP')
+@allowed([
+  'User'
+  'ServicePrincipal'
+])
+param deployingUserPrincipalType string = 'User'
+
 var commonTags = {
   environment: environment
   workload: workload
@@ -96,10 +109,11 @@ module functionApp 'modules/functionapp.bicep' = {
     functionRuntimeVersion: functionRuntimeVersion
     functionsExtensionVersion: functionsExtensionVersion
     storageAccountSku: storageAccountSku
+    certificateValidityDays: certificateValidityDays
   }
 }
 
-module eventGrid 'modules/eventgrid.bicep' = {
+module eventGrid 'modules/eventgrid.bicep' = if (deployEventGrid) {
   name: 'eventgrid-deployment'
   params: {
     location: location
@@ -107,9 +121,7 @@ module eventGrid 'modules/eventgrid.bicep' = {
     workload: workload
     tags: commonTags
     keyVaultId: keyVault.outputs.keyVaultId
-    keyVaultName: keyVault.outputs.keyVaultName
     functionAppId: functionApp.outputs.functionAppId
-    functionAppName: functionApp.outputs.functionAppName
     storageAccountName: functionApp.outputs.storageAccountName
     maxDeliveryAttempts: maxDeliveryAttempts
     eventTimeToLiveInMinutes: eventTimeToLiveInMinutes
@@ -126,20 +138,39 @@ resource rbacFunctionToKeyVault 'Microsoft.Authorization/roleAssignments@2022-04
   }
 }
 
-@description('Key Vault Name')
+resource rbacDeployingUserToKeyVault 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!empty(deployingUserObjectId)) {
+  name: guid(subscription().subscriptionId, resourceGroup().id, workload, environment, 'deploying-user-kv-cert-read')
+  scope: resourceGroup()
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'db79e9a7-68ee-4b58-9aeb-b90e7c24fcba')
+    principalId: deployingUserObjectId
+    principalType: deployingUserPrincipalType
+  }
+}
+
+@description('Key Vault-Name')
 output keyVaultName string = keyVault.outputs.keyVaultName
 
-@description('Key Vault URI')
+@description('Key Vault-URI')
 output keyVaultUri string = keyVault.outputs.keyVaultUri
 
-@description('Function App Name')
+@description('Function App-Name')
 output functionAppName string = functionApp.outputs.functionAppName
 
-@description('Function App Hostname')
+@description('Function App Standard-Hostname')
 output functionAppHostName string = functionApp.outputs.functionAppHostName
 
-@description('Application Insights Workspace Name')
+@description('Application Insights Workspace-Name (= Log Analytics Workspace-Name)')
 output appInsightsName string = appInsights.outputs.workspaceName
 
-@description('Event Grid System Topic Name')
-output systemTopicName string = eventGrid.outputs.systemTopicName
+@description('Function App Ressourcen-ID')
+output functionAppId string = functionApp.outputs.functionAppId
+
+@description('Managed Identity Principal-ID der Function App')
+output principalId string = functionApp.outputs.principalId
+
+@description('Storage Account-Name')
+output storageAccountName string = functionApp.outputs.storageAccountName
+
+@description('Event Grid System Topic-Name (leer wenn deployEventGrid=false)')
+output systemTopicName string = eventGrid.?outputs.systemTopicName ?? ''
