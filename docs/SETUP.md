@@ -10,10 +10,10 @@ Diese Anleitung beschreibt alle Schritte um den Service in deiner Azure-Umgebung
 
 | Tool | Version | Installation |
 |---|---|---|
-| Azure CLI | >= 2.50 | [docs.microsoft.com](https://docs.microsoft.com/cli/azure/install-azure-cli) |
-| Bicep CLI | >= 0.20 | `az bicep install` |
-| PowerShell | >= 7.x | [github.com/PowerShell](https://github.com/PowerShell/PowerShell) |
-| jq | >= 1.6 | `brew install jq` / `apt install jq` |
+| Azure CLI | = 2.83.0 | [docs.microsoft.com](https://docs.microsoft.com/cli/azure/install-azure-cli) |
+| Bicep CLI | = 0.40.2 | `az bicep install` |
+| PowerShell | = 7.x | [github.com/PowerShell](https://github.com/PowerShell/PowerShell) |
+| jq | = 1.7 | `brew install jq` / `apt install jq` |
 
 ### Azure Berechtigungen
 
