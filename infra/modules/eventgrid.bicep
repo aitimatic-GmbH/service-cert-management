@@ -15,17 +15,11 @@ param workload string
 @description('Tags für alle Ressourcen')
 param tags object
 
-@description('Key Vault Resource ID (Source)')
+@description('Key Vault Ressourcen-ID (Quelle)')
 param keyVaultId string
 
-@description('Key Vault Name')
-param keyVaultName string
-
-@description('Function App Resource ID (Target)')
+@description('Function App Ressourcen-ID (Ziel)')
 param functionAppId string
-
-@description('Function App Name')
-param functionAppName string
 
 @description('Storage Account Name für Dead Letter')
 param storageAccountName string
@@ -45,12 +39,12 @@ var systemTopicName = 'evgt-${workload}-${environment}-${uniqueString(location)}
 var eventSubscriptionName = 'evgs-${workload}-${environment}-certnearexpiry'
 var deadLetterContainerName = 'deadletter'
 
-// Storage Account Reference (existing)
+// Referenz auf vorhandenen Storage Account
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' existing = {
   name: storageAccountName
 }
 
-// Dead Letter Container
+// Dead-Letter-Container für nicht zustellbare Events
 resource deadLetterContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-01-01' = {
   name: '${storageAccountName}/default/${deadLetterContainerName}'
   properties: {
@@ -58,7 +52,7 @@ resource deadLetterContainer 'Microsoft.Storage/storageAccounts/blobServices/con
   }
 }
 
-// Event Grid System Topic (Key Vault als Source)
+// Event Grid System Topic (Key Vault als Ereignisquelle)
 resource systemTopic 'Microsoft.EventGrid/systemTopics@2023-12-15-preview' = {
   name: systemTopicName
   location: location
@@ -69,7 +63,7 @@ resource systemTopic 'Microsoft.EventGrid/systemTopics@2023-12-15-preview' = {
   }
 }
 
-// Event Subscription (Certificate Near Expiry → Function)
+// Event Subscription (CertificateNearExpiry → Function App)
 resource eventSubscription 'Microsoft.EventGrid/systemTopics/eventSubscriptions@2023-12-15-preview' = {
   name: eventSubscriptionName
   parent: systemTopic
@@ -103,15 +97,15 @@ resource eventSubscription 'Microsoft.EventGrid/systemTopics/eventSubscriptions@
   }
 }
 
-// Outputs
-@description('Event Grid System Topic ID')
+// Ausgaben
+@description('Event Grid System Topic Ressourcen-ID')
 output systemTopicId string = systemTopic.id
 
-@description('Event Grid System Topic Name')
+@description('Event Grid System Topic-Name')
 output systemTopicName string = systemTopic.name
 
-@description('Event Subscription ID')
+@description('Event Subscription Ressourcen-ID')
 output eventSubscriptionId string = eventSubscription.id
 
-@description('Event Subscription Name')
+@description('Event Subscription-Name')
 output eventSubscriptionName string = eventSubscription.name
